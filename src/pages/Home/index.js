@@ -1,36 +1,37 @@
-import React from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import React, { useState, useCallback, useEffect } from "react";
+import { FlatList, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+
+import { useAsyncStorage } from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Header from "../../components/Header";
 import Balance from "../../components/Balance";
 import Moviments from "../../components/Moviments";
 import Actions from "../../components/Actions";
 
-const list = [
-  {
-    id: 1,
-    label: 'Boleto Luz',
-    value: '300,50',
-    date: '17/09/2022',
-    type: 0 //despesas
-  },
-  {
-    id: 2,
-    label: 'Pix cliente X',
-    value: '1.500,00',
-    date: '27/10/2022',
-    type: 1 //entradas
-  },
-  {
-    id: 3,
-    label: 'Salario',
-    value: '7.000,00',
-    date: '01/09/2022',
-    type: 1 //entradas
-  }
-]
-
 export default function Home() {
+  const [data, setData] = useState([]);
+
+  const { getItem } = useAsyncStorage("@financas:moviments")
+
+  async function handleFetchData(){
+    const response = await getItem();
+    const data = response ? JSON.parse(response) : [];
+    setData(data);
+  }
+
+  useEffect(() =>{
+    handleFetchData();
+  }, []);
+
+  useEffect(() =>{
+    handleFetchData();
+  }, [data]);
+
+  // useFocusEffect(useCallback(() =>{
+  //   handleFetchData();
+  // }, []));
+
   return (
     <View style={styles.container}>
       <Header name={"Henrique de Freitas"} />
@@ -42,11 +43,12 @@ export default function Home() {
 
       <FlatList
         style={styles.list}
-        data={list}
-        keyExtractor={(item) => String(item.id)}
+        data={data}
+        keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
-        renderItem={ ({item}) => <Moviments data={item} /> }
+        renderItem={({ item }) => <Moviments data={item} />}
       />
+
     </View>
   );
 }
@@ -64,5 +66,5 @@ const styles = StyleSheet.create({
   list: {
     marginStart: 14,
     marginEnd: 14
-  }
+  },
 })

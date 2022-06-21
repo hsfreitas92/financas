@@ -1,16 +1,29 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { EyeOff } from "react-native-feather";
+import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 
 export default function Moviments({ data }) {
   const [showValue, setShowValue] = useState(false);
+
+  const { getItem, setItem } = useAsyncStorage("@financas:moviments")
+
+  async function handleRemove(id){
+    const response = await getItem();
+    const previousData = response ? JSON.parse(response) : [];
+
+    const data = previousData.filter((item) => item.id !== id);
+    setItem(JSON.stringify(data));
+  }
+
   return (
     <TouchableOpacity style={styles.container} onPress={ () => setShowValue(!showValue) }>
       <Text style={styles.date}>{data.date}</Text>
 
       <View style={styles.content}>
         <Text style={styles.label}>{data.label}</Text>
+        <Button title="-" onPress={() => handleRemove(data.id)}></Button>
 
         {showValue ? (
           <Text
